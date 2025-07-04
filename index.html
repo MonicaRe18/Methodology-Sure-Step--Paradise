@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منهجية تنفيذ المشاريع - نسخة 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0a0a1a;
+            --primary-accent: #4f46e5; /* Indigo */
+            --secondary-accent: #bd48ec; /* Pink */
+            --text-color: #e5e7eb; /* Gray 200 */
+            --card-bg: rgba(23, 23, 39, 0.6); /* Dark blue-ish with transparency */
+            --border-color: rgba(58, 223, 151, 0.4);
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            scroll-behavior: smooth;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .perspective-container {
+            perspective: 1500px;
+        }
+
+        .panel-3d {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 20px var(--border-color) inset;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+        }
+
+        .panel-3d:hover {
+            transform: translateZ(40px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px var(--primary-accent);
+        }
+
+        header {
+            background: rgba(10, 10, 26, 0.7) !important;
+            backdrop-filter: blur(12px) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        h1, h2, h3, h4 {
+            color: #f9fafb;
+        }
+
+        h1 { color: var(--primary-accent); }
+        .text-teal-700 { color: var(--primary-accent) !important; }
+        .text-indigo-400 { color: var(--primary-accent) !important; }
+        .text-teal-800 { color: #c7d2fe !important; }
+        .bg-teal-600 { background-color: var(--primary-accent) !important; }
+        .text-cyan-800 { color: #fbcfe8 !important; }
+        .text-pink-400 { color: var(--secondary-accent) !important; }
+
+        .tab-active {
+            border-color: var(--primary-accent) !important;
+            color: var(--primary-accent) !important;
+            background-color: rgba(79, 70, 229, 0.15) !important;
+        }
+        .tab-inactive {
+            border-color: transparent !important;
+            color: var(--text-color) !important;
+        }
+
+        /* Restored Sure Step Diagram Styles */
+        .sure-step-diagram {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            aspect-ratio: 1 / 1; 
+            margin: 2rem auto;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden; 
+            transform: rotateX(10deg);
+        }
+        .sure-step-segment {
+            position: absolute;
+            width: 50%; height: 50%; 
+            top: 0; left: 50%; 
+            transform-origin: 0% 100%; 
+            box-sizing: border-box;
+            overflow: hidden; 
+            transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+            cursor: pointer;
+            border-radius: 0 0 0 100%; 
+            box-shadow: inset 0 0 0 2px rgba(10, 10, 26, 0.8);
+        }
+        .sure-step-segment:hover {
+            transform: scale(1.05) rotate(var(--segment-rotation)) translateZ(20px); 
+            filter: brightness(1.2);
+            z-index: 20; 
+        }
+        .segment-1 { background-color: #be185d; transform: rotate(-30deg); }
+        .segment-2 { background-color: #4338ca; transform: rotate(30deg); }
+        .segment-3 { background-color: #0e7490; transform: rotate(90deg); }
+        .segment-4 { background-color: #1d4ed8; transform: rotate(150deg); }
+        .segment-5 { background-color: #9d174d; transform: rotate(210deg); }
+        .segment-6 { background-color: #6d28d9; transform: rotate(270deg); }
+        
+        .segment-content-wrapper {
+            position: absolute; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            transform: rotate(var(--counter-rotation)); 
+        }
+        .segment-content {
+            position: relative; width: 80%; height: 80%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; color: white; font-weight: bold; padding: 5px; box-sizing: border-box;
+        }
+        .phase-name-display {
+            font-size: 1.2rem; opacity: 1; transition: opacity 0.3s ease-in-out;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100%; line-height: 1.2;
+        }
+        .phase-details-display {
+            font-size: 0.6rem; line-height: 1.2; opacity: 0; transition: opacity 0.3s ease-in-out;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; height: 90%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 10px; box-sizing: border-box;
+        }
+        .sure-step-segment.active .phase-name-display { opacity: 0; }
+        .sure-step-segment.active .phase-details-display { opacity: 1; }
+        .segment-center {
+            position: absolute; width: 140px; height: 140px;
+            background-color: #111827; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary-accent); font-size: 1.8rem; font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10;
+        }
+        @media (max-width: 768px) {
+            .sure-step-diagram { max-width: 340px; }
+            .phase-name-display { font-size: 1rem; }
+            .phase-details-display { font-size: 0.8rem; line-height: 1.3; }
+            .segment-center { width: 90px; height: 90px; font-size: 1.5rem; }
+        }
+
+        .as-is-tobe-card { transition: transform 0.3s ease; }
+        .as-is-tobe-card:hover { transform: translateY(-10px) rotateY(5deg); }
+
+        .project-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .project-card:hover { transform: translateY(-15px) rotateY(-5deg) rotateX(5deg); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
+        .progress-bar-bg { background-color: rgba(255,255,255,0.1); }
+        .progress-bar-fill-teal { background-color: var(--primary-accent); }
+        
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        .modal-container { background-color: #1e1b3a; border: 1px solid var(--border-color); box-shadow: 0 0 50px rgba(79, 70, 229, 0.3); }
+
+        .mobile-menu-overlay { transform: translateX(100%); transition: transform 0.3s ease-in-out; background-color: var(--bg-color); }
+        .mobile-menu-overlay.open { transform: translateX(0); }
+    </style>
+</head>
+<body class="text-slate-200 flex flex-col min-h-screen">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <img src="photo/paradise.png" alt="Paradise Logo" class="h-12 w-auto filter brightness-0 invert" onerror="this.onerror=null;this.src='https://placehold.co/100x40/e5e7eb/4b5563?text=Logo';">
+                <h1 class="text-2xl font-bold mr-4">منهجية التنفيذ</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-button" class="md:hidden bg-teal-600 text-white p-3 rounded-full shadow-lg">☰</button>
+            </div>
+        </nav>
+    </header>
+
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay fixed inset-0 z-40 flex flex-col items-center justify-center p-8">
+        <button id="close-mobile-menu" class="absolute top-4 right-4 text-slate-400 text-3xl">✖</button>
+        <nav class="flex flex-col space-y-6 text-xl">
+            <a href="#general-description" class="text-slate-200 hover:text-indigo-400 transition-colors duration-200" onclick="closeMobileMenu()">وصف المنهجية</a>
+            <a href="#phases" class="text-slate-200 hover:text-indigo-400 transition-colors duration-200" onclick="closeMobileMenu()">مراحل المشروع</a>
+            <a href="#roles" class="text-slate-200 hover:text-indigo-400 transition-colors duration-200" onclick="closeMobileMenu()">الأدوار والمسؤوليات</a>
+            <a href="#integration" class="text-slate-200 hover:text-indigo-400 transition-colors duration-200" onclick="closeMobileMenu()">الدمج عمليًا</a>
+            <a href="#diagrams" class="text-slate-200 hover:text-indigo-400 transition-colors duration-200" onclick="closeMobileMenu()">رسوم بيانية</a>
+        </nav>
+    </div>
+
+    <main id="main-content" class="flex-grow p-4 md:p-8 perspective-container">
+        <section id="general-description" class="panel-3d text-white py-12 px-6 text-center mb-12" style="background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));">
+            <h2 class="text-4xl font-bold mb-4 text-white">منهجية Microsoft لـتنفيذ المشاريع</h2>
+            <p class="max-w-4xl mx-auto text-lg leading-relaxed mb-6 text-indigo-100">
+                تعتمد منهجيتنا على دمج أفضل الممارسات من إطار عمل <span class="font-semibold text-white">Sure Step</span> من مايكروسوفت، والذي يوفر هيكلية قوية وتوثيقًا دقيقًا لمراحل تنفيذ مشاريع Dynamics ERP، مع مرونة وسرعة استجابة منهجية <span class="font-semibold text-white">Agile</span>. هذا الدمج يضمن تسليم مشاريع عالية الجودة، موثقة بشكل كامل، وقادرة على التكيف مع التغييرات المستمرة لضمان تحقيق أقصى قيمة للعميل.
+            </p>
+            <img src="photo/Microsoft-Dynamics-365-Finance-Operations.png" alt="Microsoft Dynamics 365 Logo" class="mx-auto h-14 w-auto opacity-80 filter brightness-0 invert" onerror="this.onerror=null;this.src='https://placehold.co/200x48/ffffff/4b5563?text=MS+Dynamics+Logo';">
+        </section>
+
+        <div id="diagrams" class="my-12 text-center panel-3d p-6">
+            <h3 class="text-2xl font-bold mb-4">تحليل الوضع الحالي والمستهدف (AS IS - TO BE Analysis)</h3>
+            <div class="w-full max-w-6xl mx-auto p-8 md:p-10 font-sans">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-2">
+                    <div class="animated-item text-center flex-shrink-0 as-is-tobe-card" style="animation-delay: 0.2s;">
+                        <div class="relative w-56 h-56">
+                            <div class="absolute inset-0 bg-slate-700 transform rotate-45 rounded-3xl"></div>
+                            <div class="relative flex flex-col items-center justify-center h-full p-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M5.75 9.25A8.001 8.001 0 0120.25 9.25" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 20v-5h-5M18.25 14.75A8.001 8.001 0 013.75 14.75" /></svg>
+                                <h4 class="text-xl font-bold text-slate-200 mt-2">الوضع الحالي</h4><p class="text-lg font-semibold text-slate-400">AS-IS</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow flex flex-col items-center gap-2 w-full md:w-auto px-8">
+                        <div class="animated-item" style="animation-delay: 0.4s;"><div class="bg-indigo-600 text-white py-8 px-10 rounded-full shadow-lg text-xl">التحليل</div></div>
+                        <div class="animated-item w-full" style="animation-delay: 0.6s;"><svg viewBox="0 0 100 20" class="w-full h-auto"><line x1="0" y1="10" x2="100" y2="10" stroke="#f39c12" stroke-width="2" stroke-dasharray="3 3"/><text x="50" y="15" text-anchor="middle" font-size="4" fill="#f39c12" font-weight="bold">الفجوة (GAP)</text></svg></div>
+                        <div class="animated-item" style="animation-delay: 0.8s;"><div class="bg-pink-600 text-white py-8 px-10 rounded-full shadow-lg text-xl">الحلول</div></div>
+                    </div>
+                    <div class="animated-item text-center flex-shrink-0 as-is-tobe-card" style="animation-delay: 1s;">
+                        <div class="relative w-56 h-56">
+                            <div class="absolute inset-0 bg-indigo-900 border-2 border-indigo-500 transform rotate-45 rounded-3xl"></div>
+                            <div class="relative flex flex-col items-center justify-center h-full p-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <h4 class="text-xl font-bold text-indigo-200 mt-2">الوضع المستهدف</h4><p class="text-lg font-semibold text-indigo-400">TO-BE</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-slate-400 mt-4">يوضح هذا الرسم البياني العلاقة بين الوضع الحالي (AS IS)، الفجوة (GAP)، والوضع المستهدف (TO BE)، ضمن مراحل المشروع.</p>
+        </div>
+
+        <div class="my-12 text-center panel-3d p-6">
+            <h3 class="text-2xl font-bold mb-4">مراحل مشروع Sure Step</h3>
+            <p class="max-w-3xl mx-auto text-lg text-slate-400 mb-8">استكشف المراحل الــ 6 الرئيسية لمنهجية Sure Step. انقر على كل مرحلة لمعرفة اسمها ووصفها المختصر.</p>
+            <div class="sure-step-diagram">
+                <div class="sure-step-segment segment-1" style="--segment-rotation: -30deg; --counter-rotation: 30deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">التشخيص</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 01 - التشخيص</span><p class="text-sm mt-1">المرحلة الرسمية لإطلاق المشروع، توحيد الرؤية، وتحديد الهيكل والمسؤوليات.</p></div></div></div>
+                </div>
+                <div class="sure-step-segment segment-2" style="--segment-rotation: 30deg; --counter-rotation: -30deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">التحليل</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 02 - التحليل</span><p class="text-sm mt-1">تحليل المتطلبات التفصيلية، دراسة الإجراءات الحالية، وتحديد الفجوات للنظام الجديد.</p></div></div></div>
+                </div>
+                <div class="sure-step-segment segment-3" style="--segment-rotation: 90deg; --counter-rotation: -90deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">التصميم</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 03 - التصميم</span><p class="text-sm mt-1">تحويل المتطلبات المحللة إلى تصميم وظيفي وتقني مفصل، وإعداد خطط التطوير والتكامل.</p></div></div></div>
+                </div>
+                <div class="sure-step-segment segment-4" style="--segment-rotation: 150deg; --counter-rotation: -150deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">التطوير</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 04 - التطوير</span><p class="text-sm mt-1">تجهيز النظام فعليًا بتهيئة الإعدادات، تطوير التخصيصات، وتنفيذ التكاملات.</p></div></div></div>
+                </div>
+                <div class="sure-step-segment segment-5" style="--segment-rotation: 210deg; --counter-rotation: -210deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">النشر والإطلاق</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 05 - النشر والإطلاق</span><p class="text-sm mt-1">تسليم النظام للعميل للتجربة والموافقة النهائية، يشمل UAT وتدريب الموظفين.</p></div></div></div>
+                </div>
+                <div class="sure-step-segment segment-6" style="--segment-rotation: 270deg; --counter-rotation: -270deg;">
+                    <div class="segment-content-wrapper"><div class="segment-content"><span class="phase-name-display">التشغيل والدعم</span><div class="phase-details-display"><span class="font-semibold text-lg">المرحلة 06 - التشغيل والدعم</span><p class="text-sm mt-1">تقديم الدعم الفني والتشغيلي بعد الإطلاق، مراقبة الأداء، ومعالجة المشكلات لضمان الاستمرارية.</p></div></div></div>
+                </div>
+                <div class="segment-center">Sure Step</div>
+            </div>
+        </div>
+
+        <hr class="my-16 border-slate-700/50">
+
+        <section id="phases" class="my-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">مراحل المشروع الست</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-400 mb-8 text-center">ينقسم المشروع إلى ست مراحل رئيسية، لكل منها أهدافها وأدوارها ومخرجاتها المحددة. تم تصميم هذه المراحل لضمان تغطية جميع جوانب المشروع من البداية إلى التشغيل. يمكنك التنقل بين المراحل لاستكشاف تفاصيل كل منها.</p>
+            <div class="panel-3d overflow-hidden">
+                <div class="border-b border-slate-700">
+                    <div id="tabs-container" class="flex flex-wrap -mb-px px-4">
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-active transition-all duration-200" data-target="phase-1">1. البدء</button>
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-inactive transition-all duration-200" data-target="phase-2">2. التحليل</button>
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-inactive transition-all duration-200" data-target="phase-3">3. التصميم</button>
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-inactive transition-all duration-200" data-target="phase-4">4. التطوير</button>
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-inactive transition-all duration-200" data-target="phase-5">5. النشر</button>
+                        <button class="phase-tab text-sm md:text-base font-medium text-center p-4 border-b-2 tab-inactive transition-all duration-200" data-target="phase-6">6. التشغيل</button>
+                    </div>
+                </div>
+                <div id="phases-content" class="p-6">
+                    <div id="phase-1" class="phase-content transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">المرحلة الأولى: بدء المشروع (Initiation)</h3>
+                        <p class="mb-4 text-slate-300">هي المرحلة الرسمية التي يتم فيها إطلاق المشروع بشكل معتمد، ويجتمع خلالها فريق Paradise مع القيادات العليا من الجهة الحكومية لعرض نطاق العمل، توحيد الرؤية، وتحديد الهيكل التنظيمي والمسؤوليات.</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>التمهيد الرسمي لبدء المشروع أمام القيادات المعنية</li>
+                                    <li>عقد اجتماع الانطلاقة الرسمي (Kickoff Meeting)</li>
+                                    <li>بناء هيكل المشروع من حيث فرق العمل والأدوار</li>
+                                    <li>توحيد المفاهيم حول أهداف المشروع والمخرجات المتوقعة</li>
+                                    <li>الاتفاق على خطة التواصل وآلية إدارة التغيير</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager (Paradise)</td><td class="py-2 px-4 border-b border-slate-700">قيادة الاجتماع الافتتاحي، عرض خطة العمل، إدارة النطاق الزمني</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Customer Sponsor العميل</td><td class="py-2 px-4 border-b border-slate-700">تأكيد الالتزام والدعم السياسي والفني للمشروع</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">تجميع المعلومات التمهيدية، إعداد ملفات التقديم والعرض</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Technical Lead اختياري</td><td class="py-2 px-4 border-b border-slate-700">مراجعة البنية التحتية الأولية إن تطلب الأمر</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="phase-2" class="phase-content hidden transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">المرحلة الثانية: 🔍 Analysis – التحليل</h3>
+                        <p class="mb-4 text-slate-300">هي المرحلة التي يتم فيها تحليل المتطلبات التفصيلية بالتعاون مع فرق العمل لدى العميل، من خلال ورش العمل ولقاءات تحليلية منظمة، بهدف تحويل العمليات الحالية إلى تصميم واضح على نظام Dynamics 365.</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>دراسة الإجراءات الحالية (As-Is Process) داخل الإدارات</li>
+                                    <li>تحليل الفجوات (Fit/Gap) بين النظام الحالي والنظام المستهدف<ul class="list-disc pr-8 space-y-1 text-slate-400 mt-2"><li>(Fit مطابقة): هل النظام الجاهز (Standard) يحقق متطلبات العميل بدون أي تخصيص؟</li><li>(Gap فجوة): هل في متطلبات العميل لا يغطيها النظام الجاهز وبتحتاج إلى تخصيص (Customization)؟</li></ul></li>
+                                    <li>توثيق المتطلبات الوظيفية والتقنية</li>
+                                    <li>تحديد الوظائف الجاهزة (Standard) مقابل المطلوبة بالتخصيص (Customization)</li>
+                                    <li>الحصول على موافقة الجهة على مستندات التحليل والاعتماد الرسمي FRD</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">إدارة ورش العمل، توثيق المتطلبات، إعداد وثيقة FRD وFit/Gap</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Customer Process Owner</td><td class="py-2 px-4 border-b border-slate-700">شرح العمليات الحالية، تحديد القيود والاحتياجات</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager</td><td class="py-2 px-4 border-b border-slate-700">تنسيق الجلسات، متابعة الجدول الزمني، توثيق المخاطر المرتبطة بالتحليل</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Solution Architect</td><td class="py-2 px-4 border-b border-slate-700">تقييم مدى توافق النظام مع الاحتياجات، وتحديد مقترحات التخصيص (إذا وُجد)</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="phase-3" class="phase-content hidden transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">📐 المرحلة الثالثة: Design – التصميم</h3>
+                        <p class="mb-4 text-slate-300">في هذه المرحلة يتم تحويل المتطلبات التي تم تحليلها سابقًا إلى تصميم وظيفي وتقني مفصل، ويبدأ الفريق الفني في إعداد خطط التطوير والتكامل، استعدادًا للبرمجة والتهيئة.</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>تصميم العمليات الجديدة To-Be داخل نظام Dynamics 365</li>
+                                    <li>إعداد سيناريوهات العمل (Business Scenarios)</li>
+                                    <li>توثيق مواصفات الوظائف المخصصة (Customizations)</li>
+                                    <li>إعداد خطة التكامل (Integration Plan)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">إعداد وثيقة FDD وتصميم العمليات الوظيفية بناءً على FRD</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Technical Consultant</td><td class="py-2 px-4 border-b border-slate-700">إعداد TDD لكل تخصيص، تصميم التكاملات وواجهات البرمجة (APIs / Services)</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager</td><td class="py-2 px-4 border-b border-slate-700">مراجعة الوثائق، إدارة خطة التسليم، مراجعة جدوى التخصيصات</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Customer Process Owner</td><td class="py-2 px-4 border-b border-slate-700">مراجعة التصميم والموافقة عليه حسب العمليات المقترحة</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="phase-4" class="phase-content hidden transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">💻 المرحلة الرابعة: Development – التطوير</h3>
+                        <p class="mb-4 text-slate-300">هي المرحلة التي يتم فيها تجهيز النظام فعليًا من خلال تهيئة الإعدادات، تطوير التخصيصات المطلوبة، تنفيذ عمليات التكامل، وتحميل البيانات الأولية في بيئة تجريبية UAT.</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>تطوير الوظائف والواجهات حسب الـ Functional Requirements.</li>
+                                    <li>بناء التقارير (Power BI – Excel).</li>
+                                    <li>بناء سير العمل (Workflow).</li>
+                                    <li>تطوير التخصيصات حسب مستندات TDD</li>
+                                    <li>إعداد واجهات التكامل Integration Interfaces</li>
+                                    <li>تنفيذ سيناريوهات التكامل مع الأنظمة الخارجية مثل GFMIS أو قواعد البيانات الحكومية</li>
+                                    <li>تهيئة بيئة اختبار المستخدم UAT</li>
+                                    <li>اعداد البيانات الرئيسية Master Data</li>
+                                    <li>إجراء اختبار فني داخلي (Test)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Technical Consultant</td><td class="py-2 px-4 border-b border-slate-700">تنفيذ التخصيصات والتكاملات، إعداد بيئة UAT، إجراء الاختبارات الداخلية</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">دعم الفنيين بالسيناريوهات، اختبار الوظائف الجاهزة، إعداد خطة البيانات</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager</td><td class="py-2 px-4 border-b border-slate-700">متابعة الجدول الزمني للتسليمات، إدارة قائمة الـ CRs، توثيق تقدم الأعمال</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">QA Tester / Analyst</td><td class="py-2 px-4 border-b border-slate-700">اختياري تنفيذ اختبارات الجودة الداخلية قبل التسليم للعميل</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="phase-5" class="phase-content hidden transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">🚀 المرحلة الخامسة: النشر والإطلاق (Deployment)</h3>
+                        <p class="mb-4 text-slate-300">هي المرحلة التي يتم فيها تسليم النظام الفعلي للعميل لتجربته، والموافقة النهائية عليه، تمهيدًا للإطلاق الكامل، وتشمل اختبار قبول المستخدم (UAT)، تدريب الموظفين، وتجهيز خطة التحول للنظام الحي (Production).</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>تنفيذ اختبار قبول المستخدم (UAT) بشكل رسمي ومنظم</li>
+                                    <li>تدريب المستخدمين النهائيين حسب كل إدارة حكومية</li>
+                                    <li>مراجعة النتائج والملاحظات ومعالجتها</li>
+                                    <li>اعتماد الجهة على جاهزية النظام للإطلاق</li>
+                                    <li>تجهيز خطة الانتقال إلى بيئة الإنتاج (Cutover Plan)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">إدارة UAT، تدريب المستخدمين، إعداد دليل المستخدم</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Technical Consultant</td><td class="py-2 px-4 border-b border-slate-700">دعم فني أثناء UAT، معالجة الملاحظات، تنفيذ Cutover</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager</td><td class="py-2 px-4 border-b border-slate-700">تنظيم UAT، الإشراف على التدريب، إعداد خطة Cutover</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Customer Key Users</td><td class="py-2 px-4 border-b border-slate-700">تنفيذ UAT، تسجيل الملاحظات، اعتماد التسليمات</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="phase-6" class="phase-content hidden transition-opacity duration-300 ease-in-out">
+                        <h3 class="text-2xl font-bold mb-4">🛠 المرحلة السادسة: التشغيل والدعم بعد الإطلاق (Operation)</h3>
+                        <p class="mb-4 text-slate-300">هي المرحلة التي تبدأ بعد الإطلاق الرسمي للنظام، وتشمل تقديم الدعم الفني والتشغيلي، مراقبة الأداء، معالجة أي أعطال أو ملاحظات من المستخدمين، وتحليل مدى رضا العميل بهدف ضمان الاستقرار والاستمرارية.</p>
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">🎯 أهداف المرحلة:</h4>
+                                <ul class="list-disc pr-5 space-y-1 text-slate-300">
+                                    <li>دعم المستخدمين في التشغيل الفعلي للنظام (Post-Go-Live Support)</li>
+                                    <li>مراقبة الإجراءات اليومية لضمان صحة النظام</li>
+                                    <li>استقبال البلاغات والمشكلات الفنية والوظيفية</li>
+                                    <li>تسليم الوثائق النهائية وإغلاق المشروع رسميًا</li>
+                                    <li>تقييم المشروع من الناحية الزمنية والفنية والتنفيذية</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-indigo-400">👥 الأدوار المشاركة:</h4>
+                                <div class="overflow-x-auto"><table class="min-w-full bg-transparent border border-slate-700 rounded-lg"><thead><tr class="bg-slate-800/50"><th class="py-2 px-4 border-b border-slate-700 text-right">الدور</th><th class="py-2 px-4 border-b border-slate-700 text-right">المهام الرئيسية</th></tr></thead><tbody><tr><td class="py-2 px-4 border-b border-slate-700">Project Manager</td><td class="py-2 px-4 border-b border-slate-700">إدارة المرحلة الانتقالية – التنسيق بين الدعم الفني والعميل – إصدار تقرير الإغلاق</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Functional Consultant</td><td class="py-2 px-4 border-b border-slate-700">دعم المستخدمين – الرد على الاستفسارات – إعداد الوثائق التشغيلية</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Technical Consultant</td><td class="py-2 px-4 border-b border-slate-700">مراقبة أداء النظام – معالجة المشكلات – تأمين النسخ الاحتياطي والتحديثات</td></tr><tr><td class="py-2 px-4 border-b border-slate-700">Customer Key Users</td><td class="py-2 px-4 border-b border-slate-700">تشغيل النظام – الإبلاغ عن أي مشكلات – تقييم أداء النظام في بيئة العمل</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-slate-700/50">
+
+        <section id="roles" class="my-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">الأدوار والمسؤوليات</h2>
+             <p class="max-w-3xl mx-auto text-lg text-slate-400 mb-8 text-center">نجاح أي مشروع يعتمد على تحديد الأدوار والمسؤوليات بوضوح. انقر على كل دور لاستكشاف مسؤولياته بالتفصيل.</p>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div data-modal-target="pm-modal" class="role-card open-modal-btn panel-3d p-6 text-center flex flex-col cursor-pointer"><div class="text-5xl mb-4">🧑‍💼</div><h3 class="font-bold text-xl mb-2 text-indigo-400">مدير المشروع</h3><p class="text-slate-400 flex-grow">القيادة، التخطيط، وإدارة المخاطر لضمان نجاح المشروع.</p></div>
+                <div data-modal-target="fc-modal" class="role-card open-modal-btn panel-3d p-6 text-center flex flex-col cursor-pointer"><div class="text-5xl mb-4">🛠️</div><h3 class="font-bold text-xl mb-2 text-pink-400">الاستشاري الوظيفي</h3><p class="text-slate-400 flex-grow">تحليل المتطلبات، إعداد الوثائق، وتدريب المستخدمين.</p></div>
+                <div data-modal-target="dev-modal" class="role-card open-modal-btn panel-3d p-6 text-center flex flex-col cursor-pointer"><div class="text-5xl mb-4">💻</div><h3 class="font-bold text-xl mb-2 text-sky-400">المطورين</h3><p class="text-slate-400 flex-grow">تنفيذ التخصيصات، بناء التكاملات، وإعداد البيئات الفنية.</p></div>
+                <div data-modal-target="user-modal" class="role-card open-modal-btn panel-3d p-6 text-center flex flex-col cursor-pointer"><div class="text-5xl mb-4">👥</div><h3 class="font-bold text-xl mb-2 text-violet-400">المستخدمون الرئيسيون</h3><p class="text-slate-400 flex-grow">توضيح العمليات، اختبار النظام، واعتماد التسليمات.</p></div>
+            </div>
+            <div class="mt-16">
+                <h3 class="text-2xl font-bold mb-8 text-center">علاقات العمل المتبادلة</h3>
+                <div class="max-w-5xl mx-auto p-4 panel-3d">
+                    <div class="overflow-x-auto"><table class="w-full text-center"><thead class="border-b-2 border-slate-700"><tr><th class="p-4 text-lg font-bold text-indigo-400">الطرف</th><th class="p-4 text-lg font-bold text-slate-300">يتعاون مع</th><th class="p-4 text-lg font-bold text-indigo-400">طبيعة التعاون</th></tr></thead><tbody><tr class="border-b border-slate-700"><td class="p-4 font-semibold">مدير المشروع</td><td class="p-4 text-slate-400">الجميع</td><td class="p-4 text-slate-400">التنسيق والمتابعة</td></tr><tr class="border-b border-slate-700"><td class="p-4 font-semibold">الاستشاري الوظيفي</td><td class="p-4 text-slate-400">المستخدمون الرئيسيون، المطورون</td><td class="p-4 text-slate-400">تحليل وتصميم واختبار</td></tr><tr class="border-b border-slate-700"><td class="p-4 font-semibold">المطورون</td><td class="p-4 text-slate-400">الاستشاري الوظيفي</td><td class="p-4 text-slate-400">تنفيذ وتطوير</td></tr><tr><td class="p-4 font-semibold">المستخدمون الرئيسيون</td><td class="p-4 text-slate-400">الاستشاري الوظيفي</td><td class="p-4 text-slate-400">تحليل واختبار وتدريب</td></tr></tbody></table></div>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-16 border-slate-700/50">
+
+        <section id="integration" class="my-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">الدمج عمليًا: كيف يعزز Agile منهجية Sure Step</h2>
+             <p class="max-w-3xl mx-auto text-lg text-slate-400 mb-8 text-center">يكمن سر نجاح منهجيتنا في الدمج الذكي بين الهيكلية والمرونة. هذا الرسم البياني يوضح كيف يتم تطبيق ممارسات Agile لتعزيز وتسريع المراحل والأنشطة المختلفة في منهجية Sure Step التقليدية. مرر الفأرة فوق الأعمدة لرؤية التفاصيل.</p>
+            <div class="panel-3d p-4 md:p-8"><div class="chart-container"><canvas id="integrationChart"></canvas></div></div>
+        </section>
+
+        <hr class="my-16 border-slate-700/50">
+
+        <section id="past-projects" class="my-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">المشاريع التي تم العمل عليها</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div id="port-said-project-card" class="animated-item project-card panel-3d p-6 flex flex-col gap-4 cursor-pointer" style="animation-delay: 0.2s;">
+                    <div class="flex justify-between items-start"><h4 class="text-lg font-bold text-indigo-300">ديوان عام محافظة بورسعيد</h4><span class="text-xs font-bold bg-indigo-500/30 text-indigo-300 py-1 px-2 rounded-full">قيد التنفيذ</span></div>
+                    <div class="text-sm text-slate-400">منذ 2023</div>
+                    <div><div class="flex justify-between mb-1"><span class="text-sm font-medium">نسبة الإنجاز</span><span class="text-sm font-medium text-indigo-300">85%</span></div><div class="w-full progress-bar-bg rounded-full h-2.5"><div class="progress-bar-fill-teal h-2.5 rounded-full" style="width: 85%"></div></div></div>
+                    <div class="text-sm mt-auto pt-2 border-t border-slate-700 flex justify-between items-center"><span>المرحلة الحالية: الخامسة</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <main id="scope-content" class="hidden flex-grow p-4 md:p-8">
+        <div class="panel-3d p-6 md:p-8">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-6">
+                <h2 class="text-3xl font-bold">نطاق مشروع بورسعيد</h2>
+                <button id="back-to-main" class="bg-indigo-600 text-white py-2 px-5 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                    <span>العودة</span>
+                </button>
+            </div>
+            <div class="prose max-w-none text-slate-300">
+                <p>هذا القسم يعرض تفاصيل نطاق العمل لمشروع بورسعيد الحالي.</p>
+                <ul>
+                    <li>تطبيق الوحدات المالية (General Ledger, Accounts Payable, Accounts Receivable, Budgeting).</li>
+                    <li>تطبيق وحدات سلسلة التوريد (Inventory Management, Procurement and Sourcing).</li>
+                    <li>تطوير التقارير المخصصة المطلوبة من قبل الإدارة المالية.</li>
+                    <li>التكامل مع نظام الحضور والانصراف الحالي.</li>
+                    <li>تدريب 50 مستخدمًا رئيسيًا على النظام الجديد.</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="pm-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="modal-container w-full max-w-2xl max-h-[90vh] rounded-2xl p-6 md:p-8 overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4"><h3 class="text-2xl font-bold text-indigo-400">👤 مدير المشروع</h3><button class="close-modal-btn text-2xl text-slate-400 hover:text-white">&times;</button></div>
+            <div class="space-y-4 text-slate-300"><h4 class="font-bold text-lg">المسؤوليات العامة:</h4><ul class="list-disc pr-5 space-y-1"><li>قيادة المشروع من البداية للنهاية (Initiation to Closure)</li><li>إدارة الجدول الزمني، المخاطر، والميزانية</li><li>التنسيق مع جميع الأطراف (عميل – استشاريين – فنيين)</li><li>إدارة تغيير النطاق (Scope Change) وتحديث CR Log</li><li>ضمان جودة التسليمات ومطابقتها للعقود</li><li>تقديم التقارير الرسمية والـ Closure Document</li></ul><h4 class="font-bold text-lg">في كل مرحلة:</h4><ul class="list-disc pr-5 space-y-1"><li><strong>Initiation:</strong> قيادة اجتماع البدء الرسمي، إعداد خطة التواصل، توثيق الهيكل التنظيمي.</li><li><strong>Analysis:</strong> تنسيق ورش العمل، إدارة الجدول، توثيق المخاطر.</li><li><strong>Design:</strong> مراجعة التصميم، إدارة خطة التسليم.</li><li><strong>Development:</strong> متابعة التقدم، إدارة Sprint، توثيق الإنجاز.</li><li><strong>Deployment:</strong> تنظيم UAT، الإشراف على التدريب، إعداد خطة Cutover.</li><li><strong>Operation:</strong> متابعة ما بعد الإطلاق، دعم الإغلاق، تقييم الأداء، التنسيق بين الدعم الفني والعميل.</li></ul></div>
+        </div>
+    </div>
+    <div id="fc-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="modal-container w-full max-w-2xl max-h-[90vh] rounded-2xl p-6 md:p-8 overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4"><h3 class="text-2xl font-bold text-pink-400">🛠️ الاستشاري الوظيفي</h3><button class="close-modal-btn text-2xl text-slate-400 hover:text-white">&times;</button></div>
+            <div class="space-y-4 text-slate-300"><h4 class="font-bold text-lg">المسؤوليات العامة:</h4><ul class="list-disc pr-5 space-y-1"><li>تحليل المتطلبات الوظيفية بالتعاون مع المستخدمين</li><li>إعداد وثائق FRD، FDD، والسيناريوهات الوظيفية</li><li>اختبار النظام خلال UAT ودعم المستخدمين بالتدريب</li><li>مراجعة التخصيصات والتكاملات من منظور وظيفي</li><li>توفير أمثلة واقعية وسيناريوهات للاستخدام لضمان الفهم</li></ul><h4 class="font-bold text-lg">في كل مرحلة:</h4><ul class="list-disc pr-5 space-y-1"><li><strong>Initiation:</strong> تجهيز الملفات التقديمية، المشاركة في Kickoff.</li><li><strong>Analysis:</strong> قيادة ورش العمل، إعداد FRD، توثيق Fit/Gap.</li><li><strong>Design:</strong> إعداد FDD، مراجعة وتأكيد العمليات الجديدة.</li><li><strong>Development:</strong> دعم الفنيين، إعداد سيناريوهات الاختبار، مراجعة التخصيصات.</li><li><strong>Deployment:</strong> تنفيذ UAT، تدريب المستخدمين، تجهيز دليل المستخدم.</li><li><strong>Operation:</strong> دعم المستخدمين بعد الإطلاق، الرد على الاستفسارات.</li></ul></div>
+        </div>
+    </div>
+    <div id="dev-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="modal-container w-full max-w-2xl max-h-[90vh] rounded-2xl p-6 md:p-8 overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4"><h3 class="text-2xl font-bold text-sky-400">💻 المطورين</h3><button class="close-modal-btn text-2xl text-slate-400 hover:text-white">&times;</button></div>
+            <div class="space-y-4 text-slate-300"><h4 class="font-bold text-lg">المسؤوليات العامة:</h4><ul class="list-disc pr-5 space-y-1"><li>تنفيذ التخصيصات والتقارير وتكوين النظام</li><li>تطوير التكاملات مع الأنظمة الخارجية (APIs, Services)</li><li>إعداد بيئة UAT وترحيل البيانات</li><li>إصدار نسخ النظام ورفعها إلى بيئة الإنتاج</li><li>مراقبة أداء النظام الفني بعد الإطلاق</li></ul><h4 class="font-bold text-lg">في كل مرحلة:</h4><ul class="list-disc pr-5 space-y-1"><li><strong>Design:</strong> إعداد TDD، تصميم التكاملات.</li><li><strong>Development:</strong> تنفيذ البرمجة، اختبار داخلي، إعداد بيئة UAT.</li><li><strong>Deployment:</strong> دعم فني أثناء UAT، معالجة الملاحظات.</li><li><strong>Operation:</strong> الدعم الفني، معالجة البلاغات، تأمين النسخ الاحتياطي والتحديثات.</li></ul></div>
+        </div>
+    </div>
+     <div id="user-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="modal-container w-full max-w-2xl max-h-[90vh] rounded-2xl p-6 md:p-8 overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4"><h3 class="text-2xl font-bold text-violet-400">👥 المستخدمون الرئيسيون</h3><button class="close-modal-btn text-2xl text-slate-400 hover:text-white">&times;</button></div>
+            <div class="space-y-4 text-slate-300"><h4 class="font-bold text-lg">المسؤوليات العامة:</h4><ul class="list-disc pr-5 space-y-1"><li>توضيح الإجراءات الفعلية (As-Is) والمشاركة في تحليل الفجوات</li><li>مراجعة واعتماد المستندات (FRD, FDD)</li><li>تنفيذ اختبار القبول UAT وتسجيل الملاحظات</li><li>المشاركة في التدريب ونقل المعرفة للزملاء</li><li>تقييم أداء النظام بعد الإطلاق والتبليغ عن المشاكل</li></ul><h4 class="font-bold text-lg">في كل مرحلة:</h4><ul class="list-disc pr-5 space-y-1"><li><strong>Analysis:</strong> شرح العمليات، توثيق القيود.</li><li><strong>Design:</strong> مراجعة التصميمات المقترحة.</li><li><strong>Development:</strong> مراجعة النسخ التجريبية، تقديم feedback.</li><li><strong>Deployment:</strong> تنفيذ UAT، المشاركة في التدريب.</li><li><strong>Operation:</strong> تشغيل النظام، تقييم الأداء، تقديم بلاغات.</li></ul></div>
+        </div>
+    </div>
+
+    <footer class="mt-16 border-t border-slate-800"><div class="container mx-auto px-6 py-4 text-center text-slate-400"><p>&copy; تم تطوير هذا العرض التفاعلي بـواسطـة Paradise - 2025</p></div></footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- 3D Background Setup ---
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#bg-canvas'), alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            const starCount = 5000;
+            const positions = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3 + 0] = (Math.random() - 0.5) * 2000;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 2000;
+            }
+            const starGeometry = new THREE.BufferGeometry();
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.7 });
+            const starField = new THREE.Points(starGeometry, starMaterial);
+            scene.add(starField);
+            camera.position.z = 5;
+            function animate() {
+                requestAnimationFrame(animate);
+                starField.rotation.x += 0.0001;
+                starField.rotation.y += 0.0002;
+                renderer.render(scene, camera);
+            }
+            animate();
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // --- Interactive 3D Panels ---
+            const mainContent = document.getElementById('main-content');
+            mainContent.addEventListener('mousemove', (e) => {
+                const { clientX, clientY, currentTarget } = e;
+                const { clientWidth, clientHeight } = currentTarget;
+                const x = (clientX / clientWidth) - 0.5;
+                const y = (clientY / clientHeight) - 0.5;
+                mainContent.style.transform = `rotateY(${x * -10}deg) rotateX(${y * 10}deg)`;
+            });
+
+            // --- Original Script Logic (Corrected and Restored) ---
+            const tabs = document.querySelectorAll('.phase-tab');
+            const contents = document.querySelectorAll('.phase-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.replace('tab-active', 'tab-inactive'));
+                    tab.classList.replace('tab-inactive', 'tab-active');
+                    contents.forEach(content => {
+                        content.id === tab.dataset.target ? content.classList.remove('hidden') : content.classList.add('hidden');
+                    });
+                });
+            });
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+            mobileMenuButton.addEventListener('click', () => mobileMenuOverlay.classList.add('open'));
+            closeMobileMenuButton.addEventListener('click', () => mobileMenuOverlay.classList.remove('open'));
+            window.closeMobileMenu = () => mobileMenuOverlay.classList.remove('open');
+
+            let activeSegment = null; 
+            const sureStepSegments = document.querySelectorAll('.sure-step-segment');
+            sureStepSegments.forEach(segment => {
+                segment.addEventListener('click', () => {
+                    if (activeSegment) activeSegment.classList.remove('active');
+                    activeSegment = (activeSegment === segment) ? null : segment;
+                    if (activeSegment) activeSegment.classList.add('active');
+                });
+            });
+
+            const openModalButtons = document.querySelectorAll('.open-modal-btn');
+            const closeModalButtons = document.querySelectorAll('.close-modal-btn');
+            const allModals = document.querySelectorAll('.modal-overlay');
+            const closeAllModals = () => allModals.forEach(modal => modal.classList.add('hidden'));
+            openModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const modal = document.getElementById(button.dataset.modalTarget);
+                    if(modal) modal.classList.remove('hidden');
+                });
+            });
+            closeModalButtons.forEach(button => button.addEventListener('click', closeAllModals));
+            allModals.forEach(overlay => {
+                overlay.addEventListener('click', (event) => { if (event.target === overlay) closeAllModals(); });
+            });
+
+            const scopeContent = document.getElementById('scope-content');
+            const portSaidCard = document.getElementById('port-said-project-card');
+            const backToMainBtn = document.getElementById('back-to-main');
+            const showScopePage = (e) => {
+                e.preventDefault();
+                mainContent.classList.add('hidden');
+                scopeContent.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+            const showMainPage = (e) => {
+                e.preventDefault();
+                scopeContent.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+            if(portSaidCard) portSaidCard.addEventListener('click', showScopePage);
+            if(backToMainBtn) backToMainBtn.addEventListener('click', showMainPage);
+
+            // Chart.js initialization
+            const ctx = document.getElementById('integrationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['تحليل المتطلبات', 'إعداد التصاميم', 'الاختبار (UAT)', 'التطوير', 'التواصل مع العميل'],
+                    datasets: [{
+                        label: 'تحسينات Agile',
+                        data: [90, 80, 85, 95, 98],
+                        backgroundColor: ['rgba(79, 70, 229, 0.6)', 'rgba(236, 72, 153, 0.6)', 'rgba(56, 189, 248, 0.6)', 'rgba(167, 139, 250, 0.6)', 'rgba(79, 70, 229, 0.6)'],
+                        borderColor: ['#4f46e5', '#ec4899', '#38bdf8', '#a78bfa', '#4f46e5'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: {
+                        x: { beginAtZero: true, max: 100, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        y: { ticks: { color: '#d1d5db' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#111827', titleColor: '#f9fafb', bodyColor: '#d1d5db',
+                            callbacks: {
+                                label: (c) => ({
+                                    'تحليل المتطلبات': 'نقسم المتطلبات إلى أجزاء صغيرة (Sprints) قابلة للتنفيذ.',
+                                    'إعداد التصاميم': 'نحدث الوثائق (FDD/TDD) باستمرار بناءً على الملاحظات الدورية.',
+                                    'الاختبار (UAT)': 'يتم على دفعات بعد كل Sprint وليس دفعة واحدة في النهاية.',
+                                    'التطوير': 'تنفذ الوظائف على شكل Sprints قصيرة (2-3 أسابيع).',
+                                    'التواصل مع العميل': 'نجري اجتماعات مراجعة وتخطيط أسبوعية ونعرض التقدم بشكل دوري.'
+                                }[c.label] || '')
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
