@@ -14,11 +14,14 @@
     <style>
         :root {
             --bg-color: #0a0a1a;
-            --primary-accent: #4f46e5; /* Indigo */
-            --secondary-accent: #bd48ec; /* Pink */
+            --primary-accent: #6660e3; /* Indigo */
+            --secondary-accent: #b571f5; /* Pink */
             --text-color: #e5e7eb; /* Gray 200 */
             --card-bg: rgba(23, 23, 39, 0.6); /* Dark blue-ish with transparency */
             --border-color: rgba(58, 223, 151, 0.4);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
         }
 
         body {
@@ -85,38 +88,22 @@
             color: var(--text-color) !important;
         }
 
-        /* Restored Sure Step Diagram Styles */
         .sure-step-diagram {
-            position: relative;
-            width: 100%;
-            max-width: 650px;
-            aspect-ratio: 1 / 1; 
-            margin: 2rem auto;
-            border-radius: 50%;
-            background-color: rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            overflow: hidden; 
-            transform: rotateX(10deg);
+            position: relative; width: 100%; max-width: 650px; aspect-ratio: 1 / 1; 
+            margin: 2rem auto; border-radius: 50%; background-color: rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; transform: rotateX(10deg);
         }
         .sure-step-segment {
-            position: absolute;
-            width: 50%; height: 50%; 
-            top: 0; left: 50%; 
-            transform-origin: 0% 100%; 
-            box-sizing: border-box;
-            overflow: hidden; 
+            position: absolute; width: 50%; height: 50%; top: 0; left: 50%; 
+            transform-origin: 0% 100%; box-sizing: border-box; overflow: hidden; 
             transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
-            cursor: pointer;
-            border-radius: 0 0 0 100%; 
+            cursor: pointer; border-radius: 0 0 0 100%; 
             box-shadow: inset 0 0 0 2px rgba(10, 10, 26, 0.8);
         }
         .sure-step-segment:hover {
             transform: scale(1.05) rotate(var(--segment-rotation)) translateZ(20px); 
-            filter: brightness(1.2);
-            z-index: 20; 
+            filter: brightness(1.2); z-index: 20; 
         }
         .segment-1 { background-color: #be185d; transform: rotate(-30deg); }
         .segment-2 { background-color: #4338ca; transform: rotate(30deg); }
@@ -124,15 +111,12 @@
         .segment-4 { background-color: #1d4ed8; transform: rotate(150deg); }
         .segment-5 { background-color: #9d174d; transform: rotate(210deg); }
         .segment-6 { background-color: #6d28d9; transform: rotate(270deg); }
-        
         .segment-content-wrapper {
-            position: absolute; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
+            position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
             transform: rotate(var(--counter-rotation)); 
         }
         .segment-content {
-            position: relative; width: 80%; height: 80%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; width: 80%; height: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; color: white; font-weight: bold; padding: 5px; box-sizing: border-box;
         }
         .phase-name-display {
@@ -150,8 +134,7 @@
         .sure-step-segment.active .phase-name-display { opacity: 0; }
         .sure-step-segment.active .phase-details-display { opacity: 1; }
         .segment-center {
-            position: absolute; width: 140px; height: 140px;
-            background-color: #111827; border-radius: 50%;
+            position: absolute; width: 140px; height: 140px; background-color: #111827; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: var(--primary-accent); font-size: 1.8rem; font-weight: bold;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10;
@@ -163,9 +146,6 @@
             .segment-center { width: 90px; height: 90px; font-size: 1.5rem; }
         }
 
-        .as-is-tobe-card { transition: transform 0.3s ease; }
-        .as-is-tobe-card:hover { transform: translateY(-10px) rotateY(5deg); }
-
         .project-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .project-card:hover { transform: translateY(-15px) rotateY(-5deg) rotateX(5deg); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
         .progress-bar-bg { background-color: rgba(255,255,255,0.1); }
@@ -176,6 +156,58 @@
 
         .mobile-menu-overlay { transform: translateX(100%); transition: transform 0.3s ease-in-out; background-color: var(--bg-color); }
         .mobile-menu-overlay.open { transform: translateX(0); }
+
+        /* New Styles for Project Details Page */
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .details-card {
+            background-color: rgba(23, 23, 39, 0.7);
+            border: 1px solid rgba(58, 223, 151, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        .animated-entry {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animated-entry.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Accordion styles */
+        .accordion-header, .team-header {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover, .team-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .accordion-content, .team-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .accordion-content.open, .team-content.open {
+            max-height: 4000px; /* Increased max-height */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.open .accordion-icon, .team-header.open .accordion-icon {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="text-slate-200 flex flex-col min-h-screen">
@@ -206,6 +238,7 @@
     </div>
 
     <main id="main-content" class="flex-grow p-4 md:p-8 perspective-container">
+        <!-- Main content sections from original file -->
         <section id="general-description" class="panel-3d text-white py-12 px-6 text-center mb-12" style="background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));">
             <h2 class="text-4xl font-bold mb-4 text-white">منهجية Microsoft لـتنفيذ المشاريع</h2>
             <p class="max-w-4xl mx-auto text-lg leading-relaxed mb-6 text-indigo-100">
@@ -229,7 +262,7 @@
                     </div>
                     <div class="flex-grow flex flex-col items-center gap-2 w-full md:w-auto px-8">
                         <div class="animated-item" style="animation-delay: 0.4s;"><div class="bg-indigo-600 text-white py-8 px-10 rounded-full shadow-lg text-xl">التحليل</div></div>
-                        <div class="animated-item w-full" style="animation-delay: 0.6s;"><svg viewBox="0 0 100 20" class="w-full h-auto"><line x1="0" y1="10" x2="100" y2="10" stroke="#f39c12" stroke-width="2" stroke-dasharray="3 3"/><text x="50" y="15" text-anchor="middle" font-size="4" fill="#f39c12" font-weight="bold">الفجوة (GAP)</text></svg></div>
+                        <div class="animated-item w-full" style="animation-delay: 0.6s;"><svg viewBox="0 0 100 20" class="w-full h-auto"><line x1="0" y1="10" x2="100" y2="10" stroke="#f39c12" stroke-width="2" stroke-dasharray="3 3"/><text x="50" y="15" text-anchor="middle" font-size="8" fill="#f39c12" font-weight="bold">الفجوة (GAP)</text></svg></div>
                         <div class="animated-item" style="animation-delay: 0.8s;"><div class="bg-pink-600 text-white py-8 px-10 rounded-full shadow-lg text-xl">الحلول</div></div>
                     </div>
                     <div class="animated-item text-center flex-shrink-0 as-is-tobe-card" style="animation-delay: 1s;">
@@ -275,7 +308,7 @@
         <hr class="my-16 border-slate-700/50">
 
         <section id="phases" class="my-12">
-            <h2 class="text-3xl font-bold mb-8 text-center">مراحل المشروع الست</h2>
+            <h2 class="text-3xl font-bold mb-8 text-center">مراحل المشروع الـ 6  </h2>
             <p class="max-w-3xl mx-auto text-lg text-slate-400 mb-8 text-center">ينقسم المشروع إلى ست مراحل رئيسية، لكل منها أهدافها وأدوارها ومخرجاتها المحددة. تم تصميم هذه المراحل لضمان تغطية جميع جوانب المشروع من البداية إلى التشغيل. يمكنك التنقل بين المراحل لاستكشاف تفاصيل كل منها.</p>
             <div class="panel-3d overflow-hidden">
                 <div class="border-b border-slate-700">
@@ -446,36 +479,128 @@
         <hr class="my-16 border-slate-700/50">
 
         <section id="past-projects" class="my-12">
-            <h2 class="text-3xl font-bold mb-8 text-center">المشاريع التي تم العمل عليها</h2>
+            <h2 class="text-3xl font-bold mb-8 text-center">المشاريع</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <div id="port-said-project-card" class="animated-item project-card panel-3d p-6 flex flex-col gap-4 cursor-pointer" style="animation-delay: 0.2s;">
                     <div class="flex justify-between items-start"><h4 class="text-lg font-bold text-indigo-300">ديوان عام محافظة بورسعيد</h4><span class="text-xs font-bold bg-indigo-500/30 text-indigo-300 py-1 px-2 rounded-full">قيد التنفيذ</span></div>
                     <div class="text-sm text-slate-400">منذ 2023</div>
                     <div><div class="flex justify-between mb-1"><span class="text-sm font-medium">نسبة الإنجاز</span><span class="text-sm font-medium text-indigo-300">85%</span></div><div class="w-full progress-bar-bg rounded-full h-2.5"><div class="progress-bar-fill-teal h-2.5 rounded-full" style="width: 85%"></div></div></div>
-                    <div class="text-sm mt-auto pt-2 border-t border-slate-700 flex justify-between items-center"><span>المرحلة الحالية: الخامسة</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+                    <div class="text-sm mt-auto pt-2 border-t border-slate-700 flex justify-between items-center"><span>عرض التفاصيل</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+                </div>
+        </section>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div id="port-said-project-card" class="animated-item project-card panel-3d p-6 flex flex-col gap-4 cursor-pointer" style="animation-delay: 0.2s;">
+                    <div class="flex justify-between items-start"><h4 class="text-lg font-bold text-indigo-300">جهاز تنفيذي "المنطقة الحرة " محافظة بورسعيد</h4><span class="text-xs font-bold bg-indigo-500/30 text-indigo-300 py-1 px-2 rounded-full">قيد التنفيذ</span></div>
+                    <div class="text-sm text-slate-400">منذ 2024/div>
+                    <div><div class="flex justify-between mb-1"><span class="text-sm font-medium">نسبة الإنجاز</span><span class="text-sm font-medium text-indigo-300">85%</span></div><div class="w-full progress-bar-bg rounded-full h-2.5"><div class="progress-bar-fill-teal h-2.5 rounded-full" style="width: 85%"></div></div></div>
+                    <div class="text-sm mt-auto pt-2 border-t border-slate-700 flex justify-between items-center"><span>عرض التفاصيل</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
                 </div>
             </div>
         </section>
     </main>
 
     <main id="scope-content" class="hidden flex-grow p-4 md:p-8">
-        <div class="panel-3d p-6 md:p-8">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-6">
-                <h2 class="text-3xl font-bold">نطاق مشروع بورسعيد</h2>
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-8 animated-entry">
+                <h2 class="text-3xl md:text-4xl font-bold text-indigo-300">لوحة متابعة مشروع: بورسعيد</h2>
                 <button id="back-to-main" class="bg-indigo-600 text-white py-2 px-5 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
                     <span>العودة</span>
                 </button>
             </div>
-            <div class="prose max-w-none text-slate-300">
-                <p>هذا القسم يعرض تفاصيل نطاق العمل لمشروع بورسعيد الحالي.</p>
-                <ul>
-                    <li>تطبيق الوحدات المالية (General Ledger, Accounts Payable, Accounts Receivable, Budgeting).</li>
-                    <li>تطبيق وحدات سلسلة التوريد (Inventory Management, Procurement and Sourcing).</li>
-                    <li>تطوير التقارير المخصصة المطلوبة من قبل الإدارة المالية.</li>
-                    <li>التكامل مع نظام الحضور والانصراف الحالي.</li>
-                    <li>تدريب 50 مستخدمًا رئيسيًا على النظام الجديد.</li>
-                </ul>
+            
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card rounded-2xl p-6 flex items-center gap-6 animated-entry" style="transition-delay: 100ms;">
+                    <div class="bg-indigo-500/20 p-4 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                    <div><p class="text-slate-400 text-sm">نسبة الإنجاز الكلية</p><p class="text-3xl font-bold text-white"><span class="counter" data-target="85">0</span>%</p></div>
+                </div>
+                <div class="stat-card rounded-2xl p-6 flex items-center gap-6 animated-entry" style="transition-delay: 200ms;">
+                    <div class="bg-green-500/20 p-4 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
+                    <div><p class="text-slate-400 text-sm">الحالة الزمنية</p><p class="text-2xl font-bold text-white">في الموعد</p></div>
+                </div>
+                <div class="stat-card rounded-2xl p-6 flex items-center gap-6 animated-entry" style="transition-delay: 300ms;">
+                    <div class="bg-pink-500/20 p-4 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg></div>
+                    <div><p class="text-slate-400 text-sm">المستخدمون</p><p class="text-3xl font-bold text-white"><span class="counter" data-target="25">0</span> / 50</p></div>
+                </div>
+                 <div class="stat-card rounded-2xl p-6 flex items-center gap-6 animated-entry" style="transition-delay: 400ms;">
+                    <div class="bg-sky-500/20 p-4 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
+                    <div><p class="text-slate-400 text-sm">المرحلة الحالية</p><p class="text-2xl font-bold text-white">النشر</p></div>
+                </div>
+            </div>
+
+            <!-- New Layout Grid -->
+            <div class="grid grid-cols-1 gap-8 text-slate-300">
+                <!-- Beneficiary Card (Full Width, Top) -->
+                <div class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 500ms;">
+                    <h4 class="text-xl font-bold mb-4 text-pink-400 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        الجهة المستفيدة
+                    </h4>
+                    <div class="space-y-2 text-slate-400">
+                        <p><strong>الجهة:</strong> ديوان عام محافظة بورسعيد</p>
+                        <p><strong>القطاع:</strong> حكومي</p>
+                        <p><strong>مدير المشروع من جهه العميل:</strong> م-شيماء جودة</p>
+                        <p><strong>مدير المشروع لوزارة الاتصالات:</strong> م-محمد ابراهيم</p>
+                    </div>
+                </div>
+
+                <!-- Team Card (Full Width, Bottom) -->
+                <div id="team-card-container" class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 600ms;">
+                    <!-- Dynamic team members will be rendered here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Progress Chart (Full Width) -->
+            <div class="mt-8 details-card p-6 rounded-2xl animated-entry" style="transition-delay: 700ms;">
+                <h4 class="text-xl font-bold mb-4 text-pink-400">نسبة الإنجاز حسب المرحلة</h4>
+                <div class="h-96"><canvas id="phasesChart"></canvas></div>
+            </div>
+
+            <!-- Detailed Scope & Integrations -->
+            <div class="grid grid-cols-1 gap-8 mt-8">
+                 <!-- Detailed Scope Accordion -->
+                <div id="department-scope-accordion" class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 800ms;">
+                    <h4 class="text-xl font-bold mb-4 text-pink-400">نطاق العمل (Scope of Work)</h4>
+                    <div class="space-y-2">
+                       <!-- Accordion items will be injected here by JS -->
+                    </div>
+                </div>
+                <!-- Integrations & Other cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 900ms;">
+                        <h4 class="text-xl font-bold mb-4 text-pink-400 flex items-center gap-2">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                            التكاملات
+                        </h4>
+                        <div class="space-y-2 text-slate-400">
+                            <p><strong>حاليًا:</strong> نظام الحضور والانصراف.</p>
+                            <p><strong>مخطط لها:</strong>  GFMIS.</p>
+                        </div>
+                    </div>
+                    <div class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 1000ms;">
+                        <h4 class="text-xl font-bold mb-4 text-pink-400 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            أبرز التحديات والمخاطر
+                        </h4>
+                        <ul class="list-disc pr-5 space-y-2 text-slate-400">
+                            <li>تأخر في اعتماد بعض الإجراءات.</li>
+                            <li>الحاجة لزيادة وعي المستخدمين.</li>
+                        </ul>
+                    </div>
+                    <div class="details-card p-6 rounded-2xl animated-entry" style="transition-delay: 1100ms;">
+                        <h4 class="text-xl font-bold mb-4 text-pink-400 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            الخطوات التالية
+                        </h4>
+                        <ul class="list-disc pr-5 space-y-2 text-slate-400">
+                            <li>استكمال اختبارات UAT.</li>
+                            <li>بدء التدريب المكثف.</li>
+                            <li>إطلاق الوحدات  تجريبيًا.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -542,7 +667,7 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
-            // --- Interactive 3D Panels ---
+            // --- Interactive 3D Panels on Main Page ---
             const mainContent = document.getElementById('main-content');
             mainContent.addEventListener('mousemove', (e) => {
                 const { clientX, clientY, currentTarget } = e;
@@ -552,7 +677,34 @@
                 mainContent.style.transform = `rotateY(${x * -10}deg) rotateX(${y * 10}deg)`;
             });
 
-            // --- Original Script Logic (Corrected and Restored) ---
+            // --- Page Switching Logic ---
+            const scopeContent = document.getElementById('scope-content');
+            const portSaidCard = document.getElementById('port-said-project-card');
+            const backToMainBtn = document.getElementById('back-to-main');
+            
+            const showScopePage = (e) => {
+                e.preventDefault();
+                mainContent.classList.add('hidden');
+                scopeContent.classList.remove('hidden');
+                window.scrollTo(0, 0);
+                // Trigger animations for the new page
+                setupAnimations();
+                setupCharts();
+                renderTeamMembers(); 
+                renderDepartmentScope();
+            }
+
+            const showMainPage = (e) => {
+                e.preventDefault();
+                scopeContent.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+
+            if(portSaidCard) portSaidCard.addEventListener('click', showScopePage);
+            if(backToMainBtn) backToMainBtn.addEventListener('click', showMainPage);
+
+            // --- General UI Logic (Tabs, Modals, Menu) ---
             const tabs = document.querySelectorAll('.phase-tab');
             const contents = document.querySelectorAll('.phase-content');
             tabs.forEach(tab => {
@@ -596,28 +748,382 @@
             allModals.forEach(overlay => {
                 overlay.addEventListener('click', (event) => { if (event.target === overlay) closeAllModals(); });
             });
+            
+            // --- Team Members Logic ---
+            const teamCardContainer = document.getElementById('team-card-container');
+            const teamMembers = [
+                { id: 1, name: 'د.محمد عبدالفضيل', role: 'المدير التنفيذي', teamCategory: 'فريق ادارة المشروع' },
+                { id: 2, name: 'د.علي عطية', role: 'مدير المشروع', teamCategory: 'فريق ادارة المشروع' },
+                { id: 3, name: 'مينا ايمن', role: 'منسق المشروع', teamCategory: 'فريق ادارة المشروع' },
+                { id: 4, name: 'د.حسام الفرماوي', role: 'القائد التقني والوظيفي للمشروع', teamCategory: 'قائد التقني والوظيفي للمشروع' },
+                { id: 5, name: 'ا.محمود ايهاب', role: 'قائد وظيفي', teamCategory: 'الفريق الاستشاري' },
+                { id: 6, name: 'محمد يحي ', role: 'استشاري رئيسي', teamCategory: 'الفريق الاستشاري' },
+                { id: 7, name: 'زياد حمدي', role: 'استشاري رئيسي', teamCategory: 'الفريق الاستشاري' },
+                { id: 8, name: 'مونيكا ريمون', role: 'استشاري رئيسي', teamCategory: 'الفريق الاستشاري' },
+                { id: 9, name: 'محفوظ صبري', role: 'استشاري', teamCategory: 'الفريق الاستشاري' },
+                { id: 10, name: 'يوسف هشام', role: 'استشاري', teamCategory: 'الفريق الاستشاري' },
+                { id: 11, name: 'احمد ابراهيم', role: 'استشاري', teamCategory: 'الفريق الاستشاري' },
+                { id: 12, name: 'رحاب احمد', role: 'استشاري', teamCategory: 'الفريق الاستشاري' },
+                { id: 13, name: 'م كريم عرفة', role: 'قائد الفريق التقني', teamCategory: 'الفريق التقني' },
+                { id: 14, name: 'م-أحمد عرفة', role: 'قائد الفريق', teamCategory: 'فريق التطوير' },
+                { id: 15, name: 'م- تسنيم محمد', role: 'مطور برمجيات رئيسي', teamCategory: 'فريق التطوير' },
+                { id: 16, name: 'م- نرمين سامح', role: 'مطور برمجيات', teamCategory: 'فريق التطوير' },
+                { id: 17, name: 'م-دارين احمد', role: 'مطور برمجيات', teamCategory: 'فريق التطوير' }
+            ];
 
-            const scopeContent = document.getElementById('scope-content');
-            const portSaidCard = document.getElementById('port-said-project-card');
-            const backToMainBtn = document.getElementById('back-to-main');
-            const showScopePage = (e) => {
-                e.preventDefault();
-                mainContent.classList.add('hidden');
-                scopeContent.classList.remove('hidden');
-                window.scrollTo(0, 0);
+            function getHexColor(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                let color = '#';
+                for (let i = 0; i < 3; i++) {
+                    let value = (hash >> (i * 8)) & 0xFF;
+                    color += ('00' + value.toString(16)).substr(-2);
+                }
+                return color.substring(1);
             }
-            const showMainPage = (e) => {
-                e.preventDefault();
-                scopeContent.classList.add('hidden');
-                mainContent.classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-            if(portSaidCard) portSaidCard.addEventListener('click', showScopePage);
-            if(backToMainBtn) backToMainBtn.addEventListener('click', showMainPage);
 
-            // Chart.js initialization
-            const ctx = document.getElementById('integrationChart').getContext('2d');
-            new Chart(ctx, {
+            function renderMemberCard(member) {
+                return `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <img src="https://placehold.co/40x40/${getHexColor(member.name)}/ffffff?text=${member.name.substring(0,2).toUpperCase()}" class="rounded-full" alt="${member.name}">
+                            <div>
+                                <p class="font-bold text-white">${member.name}</p>
+                                <p class="text-xs text-slate-400">${member.role}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderTeamMembers() {
+                if (!teamCardContainer) return;
+                teamCardContainer.innerHTML = '';
+
+                const header = `
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-xl font-bold text-pink-400 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-1a6 6 0 00-1.78-4.125" /></svg>
+                            فريق عمل المشروع (FAST TAP)
+                        </h4>
+                    </div>
+                `;
+                teamCardContainer.insertAdjacentHTML('beforeend', header);
+                
+                const categoryOrder = ['فريق ادارة المشروع', 'قائد التقني والوظيفي للمشروع', 'الفريق الاستشاري', 'الفريق التقني', 'فريق التطوير'];
+                const categoryColors = {
+                    'فريق ادارة المشروع': 'border-red-500',
+                    'قائد التقني والوظيفي للمشروع': 'border-purple-500',
+                    'الفريق الاستشاري': 'border-cyan-400',
+                    'الفريق التقني': 'border-lime-400',
+                    'فريق التطوير': 'border-amber-400'
+                };
+
+                categoryOrder.forEach(category => {
+                    const membersInCategory = teamMembers.filter(m => m.teamCategory === category);
+                    if (membersInCategory.length > 0) {
+                        let membersHtml = '';
+                        if (category === 'الفريق الاستشاري') {
+                            const functionalLead = membersInCategory.filter(m => m.role === 'قائد وظيفي');
+                            const seniors = membersInCategory.filter(m => m.role === 'استشاري رئيسي');
+                            const consultants = membersInCategory.filter(m => m.role === 'استشاري');
+
+                            if (functionalLead.length > 0) {
+                                membersHtml += functionalLead.map(renderMemberCard).join('');
+                            }
+                            if (seniors.length > 0) {
+                                membersHtml += `<h6 class="text-sm font-bold text-slate-300 pt-4 pb-2 px-4">استشاريون رئيسيون</h6>` + seniors.map(renderMemberCard).join('');
+                            }
+                            if (consultants.length > 0) {
+                                membersHtml += `<h6 class="text-sm font-bold text-slate-300 pt-4 pb-2 px-4">استشاريون</h6>` + consultants.map(renderMemberCard).join('');
+                            }
+                        } else {
+                            membersHtml = membersInCategory.map(renderMemberCard).join('');
+                        }
+
+                        let categoryHtml = `
+                            <div class="mb-2 border-b border-slate-700/50">
+                                <div class="team-header flex justify-between items-center p-4">
+                                    <h5 class="font-bold text-lg text-white border-r-4 ${categoryColors[category] || 'border-gray-500'} pr-4">${category}</h5>
+                                    <svg class="accordion-icon h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                </div>
+                                <div class="team-content space-y-2 px-4">
+                                    ${membersHtml}
+                                </div>
+                            </div>`;
+                        teamCardContainer.insertAdjacentHTML('beforeend', categoryHtml);
+                    }
+                });
+
+                document.querySelectorAll('.team-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const content = header.nextElementSibling;
+                        header.classList.toggle('open');
+                        content.classList.toggle('open');
+                    });
+                });
+            }
+
+            // --- Department Scope Accordion Logic ---
+            const departmentScopeData = [
+                {
+                    name: "ادارة المالية",
+                    consultant: "زياد حمدي",
+                    procedures: [
+                        { name: "إعداد الموازنة العامة", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إدارة حسابات المدفوعات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إدارة حسابات المقبوضات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "التسويات البنكية", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إصدار التقارير المالية", progress: 100, phase: "تم التنفيذ" }
+                    ]
+                },
+                {
+                    name: "ادارة الموارد البشرية",
+                    consultant: "محمد يحي و مونيكا ريمون",
+                    procedures: [
+                        { name: "إجراء عملية التطوير المؤسسي والهيكل التنظيمي", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء تعيين موظف", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء الأجازات بأنواعها", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء كسب الغير مشروع", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء انهاء خدمة موظف", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء النقل بانواعه", progress: 100, phase: "تم التنفيذ" },
+                         { name: "إجراء الأجازات بانواعها", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء إصابة عمل", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء تغيير المسمي الوظيفي ",progress: 100, phase: "تم التنفيذ" },
+                        { name:  " إجراءالندب بانواعه", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراءالاعارة بانواعه", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراءتسوية ضم مدة", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراءتسوية مؤهل علمي", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء تخصص مؤهل علمي جديد", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء ترقية", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء الجزاءات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء التظلمات علي الجزاءات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء تقييم الاداء", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء التظلمات علي التقييم", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء العلاوات التشجيعية", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء العلاوات الدورية", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء اشتراكات التأمين", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء صندوق التكافل", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إجراء التدريب واثره", progress: 85, phase: "قيد التطوير" },
+                      
+                    ]
+                },
+                {
+                    name: "ادارة الاستيراتيجية",
+                    consultant: "رحاب احمد",
+                    procedures: [
+                        { name: "تخطيط الأهداف الاستراتيجية", progress: 100, phase: "تم التنفيذ" },
+                        { name: "متابعة مؤشرات الأداء الرئيسية (KPIs)", progress: 80, phase: "قيد التطوير" },
+                        { name: "إعداد تقارير الأداء الاستراتيجي", progress: 60, phase: "قيد التطوير" }
+                    ]
+                },
+                {
+                    name: "ادارة المخازن",
+                    consultant: "محفوظ صبري",
+                    procedures: [
+                        { name: "إدارة أرصدة المخزون", progress: 100, phase: "تم التنفيذ" },
+                        { name: "استلام وفحص الأصناف", progress: 100, phase: "تم التنفيذ" },
+                        { name: "صرف الأصناف من المخازن", progress: 95, phase: "قيد الاختبار" }
+                    ]
+                },
+                {
+                    name: "ادارة التعاقدات",
+                    consultant: "محفوظ صبري",
+                    procedures: [
+                        { name: "دورة طلبات الشراء", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إدارة عروض الأسعار", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إصدار أوامر التوريد", progress: 100, phase: "تم التنفيذ" },
+                        { name: "إدارة عقود الموردين", progress: 70, phase: "قيد التطوير" }
+                    ]
+                },
+                {
+                    name: "ادارة النقل الميكانيكي",
+                    consultant: "يوسف هشام و احمد ابراهيم",
+                    procedures: [
+                        { name: "إدارة حركة السيارات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "تسجيل قراءات العدادات", progress: 90, phase: "قيد الاختبار" },
+                        { name: "إدارة أوامر الشغل و الصيانة", progress: 40, phase: "تصميم" }
+                    ]
+                },
+                {
+                    name: "ادارة الايرادات",
+                    consultant: "احمد ابراهيم",
+                    procedures: [
+                        { name: "إدارة تحصيل الإيرادات", progress: 80, phase: "قيد التطوير" },
+                        { name: "إصدار فواتير الخدمات", progress: 100, phase: "تم التنفيذ" },
+                        { name: "متابعة المتأخرات", progress: 30, phase: "تحليل" }
+                    ]
+                }
+            ];
+
+            function renderDepartmentScope() {
+                const accordionContainer = document.querySelector('#department-scope-accordion .space-y-2');
+                if (!accordionContainer) return;
+                accordionContainer.innerHTML = ''; // Clear previous content
+
+                const phaseColors = {
+                    "تم التنفيذ": "bg-green-500/30 text-green-300",
+                    "قيد الاختبار": "bg-yellow-500/30 text-yellow-300",
+                    "قيد التطوير": "bg-sky-500/30 text-sky-300",
+                    "تصميم": "bg-indigo-500/30 text-indigo-300",
+                    "تحليل": "bg-pink-500/30 text-pink-300",
+                };
+
+                departmentScopeData.forEach(department => {
+                    const proceduresHtml = department.procedures.map(proc => `
+                        <tr class="border-b border-slate-700/50 hover:bg-slate-800/20">
+                            <td class="p-3 text-slate-300">${proc.name}</td>
+                            <td class="p-3 w-48">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                        <div class="bg-teal-500 h-2.5 rounded-full" style="width: ${proc.progress}%"></div>
+                                    </div>
+                                    <span class="text-xs font-medium text-teal-400">${proc.progress}%</span>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center w-36">
+                                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${phaseColors[proc.phase] || 'bg-gray-500/30 text-gray-300'}">
+                                    ${proc.phase}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    const accordionItem = `
+                        <div class="border-b border-slate-700/50">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <div>
+                                    <h5 class="text-lg font-bold text-teal-300">${department.name}</h5>
+                                    <p class="text-sm text-slate-400">المسؤول: ${department.consultant}</p>
+                                </div>
+                                <svg class="accordion-icon h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <div class="accordion-content px-0 sm:px-4">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-right min-w-[600px]">
+                                        <thead class="bg-slate-800/50">
+                                            <tr>
+                                                <th class="p-3 text-sm font-semibold text-slate-400 text-right">الإجراء</th>
+                                                <th class="p-3 text-sm font-semibold text-slate-400 text-right">نسبة الإنجاز</th>
+                                                <th class="p-3 text-sm font-semibold text-slate-400 text-center">الحالة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${proceduresHtml}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    accordionContainer.insertAdjacentHTML('beforeend', accordionItem);
+                });
+
+                // Re-attach event listeners for the new accordion
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const content = header.nextElementSibling;
+                        header.classList.toggle('open');
+                        content.classList.toggle('open');
+                    });
+                });
+            }
+
+
+            // --- Animation and Chart Setup for Details Page ---
+            function setupAnimations() {
+                const animatedElements = document.querySelectorAll('.animated-entry');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                animatedElements.forEach(el => observer.observe(el));
+
+                const counters = document.querySelectorAll('.counter');
+                counters.forEach(counter => {
+                    counter.innerText = '0'; // Reset counter
+                    const updateCount = () => {
+                        const target = +counter.getAttribute('data-target');
+                        const count = +counter.innerText;
+                        const speed = 200; // a smaller number is faster
+                        const increment = target / speed;
+
+                        if (count < target) {
+                            counter.innerText = Math.ceil(count + increment);
+                            setTimeout(updateCount, 10);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+                    updateCount();
+                });
+            }
+
+            let phasesChartInstance = null;
+            function setupCharts() {
+                // Chart for Phases on Details Page
+                const phasesCtx = document.getElementById('phasesChart')?.getContext('2d');
+                if (phasesChartInstance) {
+                    phasesChartInstance.destroy();
+                }
+                if (phasesCtx) {
+                    phasesChartInstance = new Chart(phasesCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['تحليل المتطلبات', 'التصميم', 'التطوير', 'الاختبار (UAT)', 'التدريب', 'التشغيل'],
+                            datasets: [{
+                                label: 'نسبة الإنجاز',
+                                data: [100, 100, 100, 90, 70, 10],
+                                backgroundColor: [
+                                    'rgba(34, 197, 94, 0.6)',
+                                    'rgba(34, 197, 94, 0.6)',
+                                    'rgba(245, 158, 11, 0.6)',
+                                    'rgba(245, 158, 11, 0.6)',
+                                    'rgba(245, 158, 11, 0.6)',
+                                    'rgba(239, 68, 68, 0.6)'
+                                ],
+                                borderColor: [
+                                    '#22c55e',
+                                    '#22c55e',
+                                    '#f59e0b',
+                                    '#f59e0b',
+                                    '#f59e0b',
+                                    '#ef4444'
+                                ],
+                                borderWidth: 1,
+                                borderRadius: 5,
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                            scales: {
+                                x: { beginAtZero: true, max: 100, ticks: { color: '#9ca3af', font: { family: 'Tajawal' } }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                                y: { ticks: { color: '#d1d5db', font: { family: 'Tajawal', size: 14 } }, grid: { display: false } }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#111827', titleColor: '#f9fafb', bodyColor: '#d1d5db',
+                                    bodyFont: { family: 'Tajawal' }, titleFont: { family: 'Tajawal' },
+                                    callbacks: {
+                                        label: (c) => `${c.dataset.label}: ${c.raw}%`
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Chart.js initialization for main page
+            const integrationCtx = document.getElementById('integrationChart').getContext('2d');
+            new Chart(integrationCtx, {
                 type: 'bar',
                 data: {
                     labels: ['تحليل المتطلبات', 'إعداد التصاميم', 'الاختبار (UAT)', 'التطوير', 'التواصل مع العميل'],
